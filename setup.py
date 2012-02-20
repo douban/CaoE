@@ -12,10 +12,10 @@ setup(
     py_modules = ['caoe'],
     install_requires = install_requires,
     author = "Qiangning Hong",
-    author_email = "hongqn@gmail.com",
+    author_email = "hongqn@douban.com",
     license = "PSF",
     keywords = "process management",
-    url = "https://github.com/hongqn/caoe",
+    url = "https://github.com/douban/caoe",
     test_suite = 'nose.collector',
     tests_require = ['nose'],
 )
