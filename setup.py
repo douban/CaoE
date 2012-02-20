@@ -9,8 +9,8 @@ setup(
     name = "CaoE",
     description = "Kill all children processes when the parent dies",
     long_description = open(os.path.join(os.path.dirname(__file__),
-                                         'README')).read(),
-    version = "0.1",
+                                         'README.rst')).read(),
+    version = "0.1.1",
     platforms = ['POSIX'],
     classifiers = [
         'Intended Audience :: Developers',
