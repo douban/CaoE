@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import shutil
 from multiprocessing import Process
 import time
+from signal import SIGKILL
 
 from nose.tools import ok_, eq_
 
@@ -59,9 +60,24 @@ def test_all_child_processes_should_be_killed_if_parent_is_killed():
     with mkdtmp() as tmpdir:
         p = Process(target=parent, args=(tmpdir,), kwargs={'pause': True})
         p.start()
-        time.sleep(1)
+        time.sleep(1)  # wait for child processes spawned
         p.terminate()
         p.join()
         cpids = [int(x.split('-')[1]) for x in os.listdir(tmpdir) if x.startswith('child-')]
         eq_(len(cpids), 3)
         ok_(all(not is_process_alive(pid) for pid in cpids))
+
+
+def test_all_child_processes_should_be_killed_if_parent_is_killed_by_SIGKILL():
+    with mkdtmp() as tmpdir:
+        p = Process(target=parent, args=(tmpdir,), kwargs={'pause': True})
+        p.start()
+        time.sleep(1)  # wait for child processes spawned
+        os.kill(p.pid, SIGKILL)
+        p.join()
+        time.sleep(5)  # wait for the parent status checking interval
+        cpids = [int(x.split('-')[1]) for x in os.listdir(tmpdir) if x.startswith('child-')]
+        eq_(len(cpids), 3)
+        ok_(all(not is_process_alive(pid) for pid in cpids))
+
+
