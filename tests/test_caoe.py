@@ -28,21 +28,21 @@ def is_process_alive(pid):
     else:
         return True
 
+def parent(path):
+    caoe.install()
+    open(os.path.join(path, 'parent-%d' % os.getpid()), 'w').close()
+    for i in range(3):
+        p = Process(target=child, args=(path,))
+        p.daemon = True
+        p.start()
+    time.sleep(0.1)
+
+def child(path):
+    pid = os.getpid()
+    open(os.path.join(path, 'child-%d' % pid), 'w').close()
+    time.sleep(100)
+
 def test_all_child_processes_should_be_killed_if_parent_quit_normally():
-    def parent(path):
-        caoe.install()
-        open(os.path.join(path, 'parent-%d' % os.getpid()), 'w').close()
-        for i in range(3):
-            p = Process(target=child, args=(path,))
-            p.daemon = True
-            p.start()
-        time.sleep(0.1)
-
-    def child(path):
-        pid = os.getpid()
-        open(os.path.join(path, 'child-%d' % pid), 'w').close()
-        time.sleep(100)
-
     with mkdtmp() as tmpdir:
         p = Process(target=parent, args=(tmpdir,))
         p.start()
@@ -52,3 +52,5 @@ def test_all_child_processes_should_be_killed_if_parent_quit_normally():
         ok_(all(not is_process_alive(pid) for pid in cpids))
 
 
+#def test_all_child_processes_should_be_killed_if_parent_is_killed():
+#    with mkdtmp() as tmpdir
