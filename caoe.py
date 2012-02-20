@@ -18,7 +18,7 @@ def install():
             print "grand child: %d" % os.getpid()
     else:
         # parent process
-        gid = os.getpgid(pid)
+        gid = pid
         handler = make_quit_signal_handler(gid)
         signal(SIGINT, handler)
         signal(SIGQUIT, handler)
@@ -27,21 +27,22 @@ def install():
         pause()
 
 
-def make_quit_signal_handler(gid, signal=SIGTERM):
+def make_quit_signal_handler(gid, sig=SIGTERM):
     def handler(signum, frame):
         print "%d got signal %s for quit" % (os.getpid(), signum)
         signal(SIGTERM, SIG_DFL)
-        os.killpg(gid, signal)
+        os.killpg(gid, sig)
     return handler
 
 
-def make_child_die_signal_handler(gid, signal=SIGTERM):
+def make_child_die_signal_handler(gid, sig=SIGTERM):
     def handler(signum, frame):
         print "%d got signal %s for child die" % (os.getpid(), signum)
         pid, status = os.wait()
         try:
             signal(SIGTERM, SIG_DFL)
-            os.killpg(gid, signal)
+            print "kill -%d" % gid
+            os.killpg(gid, sig)
         finally:
             sys.exit((status & 0xff00) >> 8)
     return handler
