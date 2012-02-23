@@ -4,3 +4,7 @@ rmv:
 
 install: "sudo python setup.py develop"
 script: "sudo python setup.py test"
+
+notifications:
+  email:
+    - hongqn@douban.com
