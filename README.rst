@@ -23,5 +23,8 @@ grandchild process will continue to run.  The child process keeps checking the
 status of parent.  If it found that the parent has died, it kills grandchild
 process (and grand-grandchild processes if there are any) and suicides.
 
+.. image:: https://secure.travis-ci.org/douban/CaoE.png?branch=master
+   :alt: Build Status
+   :target: http://travis-ci.org/douban/CaoE
 
 .. vim:set filetype=rst:

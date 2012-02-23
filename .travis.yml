@@ -2,5 +2,9 @@ language: ruby  # sigh
 rmv:
   - 1.9.3
 
-install: "python setup.py develop"
-script: "python setup.py test"
+install: "sudo python setup.py develop"
+script: "sudo python setup.py test"
+
+notifications:
+  email:
+    - hongqn@douban.com
