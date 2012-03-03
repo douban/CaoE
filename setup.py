@@ -2,8 +2,8 @@ import sys, os
 from setuptools import setup
 
 install_requires = []
-if sys.platform.startswith('linux'):
-    install_requires.append('prctl')
+if sys.platform.startswith('linux') and sys.version_info < (3,):
+    install_requires.append('prctl')  # prctl is not compatible with py3k yet.
 
 setup(
     name = "CaoE",
