@@ -65,6 +65,7 @@ def test_all_child_processes_should_be_killed_if_parent_is_killed():
         p.join()
         cpids = [int(x.split('-')[1]) for x in os.listdir(tmpdir) if x.startswith('child-')]
         eq_(len(cpids), 3)
+        time.sleep(1)  # wait for killing children
         ok_(all(not is_process_alive(pid) for pid in cpids))
 
 
