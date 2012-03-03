@@ -1,9 +1,12 @@
-language: ruby  # sigh
-rmv:
-  - 1.9.3
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.2"
 
-install: "sudo python setup.py develop"
-script: "sudo python setup.py test"
+install: pip install . --use-mirrors
+
+script: nosetests
 
 notifications:
   email:
