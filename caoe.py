@@ -38,8 +38,8 @@ def make_quit_signal_handler(gid, sig=SIGTERM):
         try:
             os.killpg(gid, sig)
         except os.error, ex:
-            if ex.errno == errno.ESRCH:
-                pass
+            if ex.errno != errno.ESRCH:
+                raise
     return handler
 
 
