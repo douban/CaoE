@@ -20,7 +20,8 @@ def install():
         signal(SIGQUIT, handler)
         signal(SIGTERM, handler)
         signal(SIGCHLD, make_child_die_signal_handler(gid))
-        pause()
+        while True:
+            pause()
 
 
 def make_quit_signal_handler(gid, sig=SIGTERM):
@@ -32,7 +33,12 @@ def make_quit_signal_handler(gid, sig=SIGTERM):
 
 def make_child_die_signal_handler(gid, sig=SIGTERM):
     def handler(signum, frame):
-        pid, status = os.wait()
+        try:
+            pid, status = os.wait()
+        except OSError:
+            # sometimes there is no child processes already
+            status = 0
+
         try:
             signal(SIGTERM, SIG_DFL)
             os.killpg(gid, sig)
