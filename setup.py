@@ -14,7 +14,7 @@ setup(
     description = "Kill all children processes when the parent dies",
     long_description = open(os.path.join(os.path.dirname(__file__),
                                          'README.rst')).read(),
-    version = "0.1.3",
+    version = "0.1.4.1",
     platforms = ['POSIX'],
     classifiers = [
         'Intended Audience :: Developers',
