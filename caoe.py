@@ -1,10 +1,22 @@
+import errno
 import os, sys
 from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG_DFL
 import time
 
 __all__ = ['install']
 
-def install():
+def install(fork=True):
+    def _reg(gid):
+        handler = make_quit_signal_handler(gid)
+        signal(SIGINT, handler)
+        signal(SIGQUIT, handler)
+        signal(SIGTERM, handler)
+        signal(SIGCHLD, make_child_die_signal_handler(gid))
+
+    if not fork:
+        _reg(os.getpid())
+        return
+
     pid = os.fork()
     if pid == 0:
         # child process
@@ -15,11 +27,7 @@ def install():
     else:
         # parent process
         gid = pid
-        handler = make_quit_signal_handler(gid)
-        signal(SIGINT, handler)
-        signal(SIGQUIT, handler)
-        signal(SIGTERM, handler)
-        signal(SIGCHLD, make_child_die_signal_handler(gid))
+        _reg(gid)
         while True:
             pause()
 
@@ -27,7 +35,11 @@ def install():
 def make_quit_signal_handler(gid, sig=SIGTERM):
     def handler(signum, frame):
         signal(SIGTERM, SIG_DFL)
-        os.killpg(gid, sig)
+        try:
+            os.killpg(gid, sig)
+        except os.error, ex:
+            if ex.errno == errno.ESRCH:
+                pass
     return handler
 
 
