@@ -20,7 +20,8 @@ def install():
         signal(SIGQUIT, handler)
         signal(SIGTERM, handler)
         signal(SIGCHLD, make_child_die_signal_handler(gid))
-        pause()
+        while True:
+            pause()
 
 
 def make_quit_signal_handler(gid, sig=SIGTERM):
