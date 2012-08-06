@@ -5,13 +5,13 @@ import time
 
 __all__ = ['install']
 
-def install(fork=True):
+def install(fork=True, sig=SIGTERM):
     def _reg(gid):
-        handler = make_quit_signal_handler(gid)
+        handler = make_quit_signal_handler(gid, sig)
         signal(SIGINT, handler)
         signal(SIGQUIT, handler)
         signal(SIGTERM, handler)
-        signal(SIGCHLD, make_child_die_signal_handler(gid))
+        signal(SIGCHLD, make_child_die_signal_handler(gid, sig))
 
     if not fork:
         _reg(os.getpid())
@@ -23,7 +23,7 @@ def install(fork=True):
         os.setpgrp()
         pid = os.fork()
         if pid != 0:
-            exit_when_parent_or_child_dies()
+            exit_when_parent_or_child_dies(sig)
     else:
         # parent process
         gid = pid
@@ -59,7 +59,7 @@ def make_child_die_signal_handler(gid, sig=SIGTERM):
     return handler
 
 
-def exit_when_parent_or_child_dies():
+def exit_when_parent_or_child_dies(sig):
     gid = os.getpgrp()
     signal(SIGCHLD, make_child_die_signal_handler(gid))
 
@@ -76,6 +76,6 @@ def exit_when_parent_or_child_dies():
             if os.getppid() == 1:
                 # parent died, suicide
                 signal(SIGTERM, SIG_DFL)
-                os.killpg(gid, SIGTERM)
+                os.killpg(gid, sig)
                 sys.exit()
             time.sleep(5)
