@@ -7,7 +7,7 @@ python:
 install: pip install . --use-mirrors
 
 script:
-  - python -c "import sys; sys.exit(sys.version_info[0]<3)" && 2to3 -w tests
+  - python -c "import sys; sys.exit(sys.version_info[0]<3)" && 2to3 -w tests || true
   - python setup.py test
 
 notifications:
