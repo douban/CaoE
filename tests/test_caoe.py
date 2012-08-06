@@ -29,8 +29,8 @@ def is_process_alive(pid):
     else:
         return True
 
-def parent(path, pause=False):
-    caoe.install()
+def parent(path, pause=False, fork=True):
+    caoe.install(fork=fork)
     open(os.path.join(path, 'parent-%d' % os.getpid()), 'w').close()
     for i in range(3):
         p = Process(target=child, args=(path,))
@@ -46,19 +46,21 @@ def child(path):
     open(os.path.join(path, 'child-%d' % pid), 'w').close()
     time.sleep(100)
 
-def test_all_child_processes_should_be_killed_if_parent_quit_normally():
+def test_all_child_processes_should_be_killed_if_parent_quit_normally(fork=True):
     with mkdtmp() as tmpdir:
-        p = Process(target=parent, args=(tmpdir,))
+        p = Process(target=parent, args=(tmpdir,), kwargs={'fork': fork})
         p.start()
         p.join(1)
         cpids = [int(x.split('-')[1]) for x in os.listdir(tmpdir) if x.startswith('child-')]
         eq_(len(cpids), 3)
         ok_(all(not is_process_alive(pid) for pid in cpids))
 
+def test_nonfork_all_child_processes_should_be_killed_if_parent_quit_normally():
+    test_all_child_processes_should_be_killed_if_parent_quit_normally(fork=False)
 
-def test_all_child_processes_should_be_killed_if_parent_is_killed():
+def test_all_child_processes_should_be_killed_if_parent_is_killed(fork=True):
     with mkdtmp() as tmpdir:
-        p = Process(target=parent, args=(tmpdir,), kwargs={'pause': True})
+        p = Process(target=parent, args=(tmpdir,), kwargs={'pause': True, 'fork': fork})
         p.start()
         time.sleep(1)  # wait for child processes spawned
         p.terminate()
@@ -68,6 +70,8 @@ def test_all_child_processes_should_be_killed_if_parent_is_killed():
         time.sleep(1)  # wait for killing children
         ok_(all(not is_process_alive(pid) for pid in cpids))
 
+def test_nonfork_all_child_processes_should_be_killed_if_parent_is_killed():
+    test_all_child_processes_should_be_killed_if_parent_is_killed(fork=False)
 
 def test_all_child_processes_should_be_killed_if_parent_is_killed_by_SIGKILL():
     with mkdtmp() as tmpdir:

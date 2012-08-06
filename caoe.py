@@ -1,25 +1,33 @@
+import errno
 import os, sys
 from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG_DFL
 import time
 
 __all__ = ['install']
 
-def install():
+def install(fork=True, sig=SIGTERM):
+    def _reg(gid):
+        handler = make_quit_signal_handler(gid, sig)
+        signal(SIGINT, handler)
+        signal(SIGQUIT, handler)
+        signal(SIGTERM, handler)
+        signal(SIGCHLD, make_child_die_signal_handler(gid, sig))
+
+    if not fork:
+        _reg(os.getpid())
+        return
+
     pid = os.fork()
     if pid == 0:
         # child process
         os.setpgrp()
         pid = os.fork()
         if pid != 0:
-            exit_when_parent_or_child_dies()
+            exit_when_parent_or_child_dies(sig)
     else:
         # parent process
         gid = pid
-        handler = make_quit_signal_handler(gid)
-        signal(SIGINT, handler)
-        signal(SIGQUIT, handler)
-        signal(SIGTERM, handler)
-        signal(SIGCHLD, make_child_die_signal_handler(gid))
+        _reg(gid)
         while True:
             pause()
 
@@ -27,7 +35,11 @@ def install():
 def make_quit_signal_handler(gid, sig=SIGTERM):
     def handler(signum, frame):
         signal(SIGTERM, SIG_DFL)
-        os.killpg(gid, sig)
+        try:
+            os.killpg(gid, sig)
+        except os.error, ex:
+            if ex.errno != errno.ESRCH:
+                raise
     return handler
 
 
@@ -47,7 +59,7 @@ def make_child_die_signal_handler(gid, sig=SIGTERM):
     return handler
 
 
-def exit_when_parent_or_child_dies():
+def exit_when_parent_or_child_dies(sig):
     gid = os.getpgrp()
     signal(SIGCHLD, make_child_die_signal_handler(gid))
 
@@ -64,6 +76,6 @@ def exit_when_parent_or_child_dies():
             if os.getppid() == 1:
                 # parent died, suicide
                 signal(SIGTERM, SIG_DFL)
-                os.killpg(gid, SIGTERM)
+                os.killpg(gid, sig)
                 sys.exit()
             time.sleep(5)
