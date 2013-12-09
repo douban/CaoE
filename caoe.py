@@ -1,7 +1,8 @@
 import errno
-import os, sys
-from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG_DFL
+import os
+import sys
 import time
+from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG_DFL
 
 __all__ = ['install']
 
