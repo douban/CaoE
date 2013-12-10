@@ -38,7 +38,7 @@ def make_quit_signal_handler(gid, sig=SIGTERM):
         signal(SIGTERM, SIG_DFL)
         try:
             os.killpg(gid, sig)
-        except os.error, ex:
+        except os.error as ex:
             if ex.errno != errno.ESRCH:
                 raise
     return handler
