@@ -2,6 +2,11 @@ import os
 import tempfile
 from contextlib import contextmanager
 import shutil
+# Fix bug: http://bugs.python.org/issue15881
+try:
+    import multiprocessing
+except ImportError:
+    pass
 from multiprocessing import Process
 import time
 from signal import SIGKILL
