@@ -6,8 +6,8 @@ if sys.version_info >= (3,):
     kw['use_2to3'] = True
 
 install_requires = []
-if sys.platform.startswith('linux') and sys.version_info < (3,):
-    install_requires.append('prctl')  # prctl is not compatible with py3k yet.
+if sys.platform.startswith('linux'):
+    install_requires.append('python-prctl')
 
 setup(
     name = "CaoE",

@@ -6,6 +6,7 @@ from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG
 
 __all__ = ['install']
 
+
 def install(fork=True, sig=SIGTERM):
     def _reg(gid):
         handler = make_quit_signal_handler(gid, sig)
@@ -65,10 +66,10 @@ def exit_when_parent_or_child_dies(sig):
     signal(SIGCHLD, make_child_die_signal_handler(gid))
 
     try:
-        from prctl import prctl, PDEATHSIG
+        import prctl
         signal(SIGHUP, make_quit_signal_handler(gid))
         # give me SIGHUP if my parent dies
-        prctl(PDEATHSIG, SIGHUP)
+        prctl.set_pdeathsig(SIGHUP)
         pause()
 
     except ImportError:
