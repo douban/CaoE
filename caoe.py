@@ -1,9 +1,11 @@
 import errno
-import os, sys
-from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG_DFL
+import os
+import sys
 import time
+from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG_DFL
 
 __all__ = ['install']
+
 
 def install(fork=True, sig=SIGTERM):
     def _reg(gid):
@@ -37,7 +39,7 @@ def make_quit_signal_handler(gid, sig=SIGTERM):
         signal(SIGTERM, SIG_DFL)
         try:
             os.killpg(gid, sig)
-        except os.error, ex:
+        except os.error as ex:
             if ex.errno != errno.ESRCH:
                 raise
     return handler
@@ -64,10 +66,10 @@ def exit_when_parent_or_child_dies(sig):
     signal(SIGCHLD, make_child_die_signal_handler(gid))
 
     try:
-        from prctl import prctl, PDEATHSIG
+        import prctl
         signal(SIGHUP, make_quit_signal_handler(gid))
         # give me SIGHUP if my parent dies
-        prctl(PDEATHSIG, SIGHUP)
+        prctl.set_pdeathsig(SIGHUP)
         pause()
 
     except ImportError:
