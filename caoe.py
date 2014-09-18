@@ -6,6 +6,8 @@ from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG
 
 __all__ = ['install']
 
+PARENT_POLL_INTERVAL = 5  # only used if no prctl available
+
 
 def install(fork=True, sig=SIGTERM):
     def _reg(gid):
@@ -85,4 +87,4 @@ def exit_when_parent_or_child_dies(sig):
                 signal(SIGTERM, SIG_DFL)
                 os.killpg(gid, sig)
                 sys.exit()
-            time.sleep(5)
+            time.sleep(PARENT_POLL_INTERVAL)
