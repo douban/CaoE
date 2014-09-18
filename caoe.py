@@ -6,6 +6,8 @@ from signal import signal, SIGINT, SIGQUIT, SIGTERM, SIGCHLD, SIGHUP, pause, SIG
 
 __all__ = ['install']
 
+PARENT_POLL_INTERVAL = 5  # only used if no prctl available
+
 
 def install(fork=True, sig=SIGTERM):
     def _reg(gid):
@@ -25,7 +27,11 @@ def install(fork=True, sig=SIGTERM):
         os.setpgrp()
         pid = os.fork()
         if pid != 0:
+            # still in child process
             exit_when_parent_or_child_dies(sig)
+
+        # grand child process continues...
+
     else:
         # parent process
         gid = pid
@@ -70,7 +76,8 @@ def exit_when_parent_or_child_dies(sig):
         signal(SIGHUP, make_quit_signal_handler(gid))
         # give me SIGHUP if my parent dies
         prctl.set_pdeathsig(SIGHUP)
-        pause()
+        while True:
+            pause()
 
     except ImportError:
         # fallback to polling status of parent
@@ -80,4 +87,4 @@ def exit_when_parent_or_child_dies(sig):
                 signal(SIGTERM, SIG_DFL)
                 os.killpg(gid, sig)
                 sys.exit()
-            time.sleep(5)
+            time.sleep(PARENT_POLL_INTERVAL)
